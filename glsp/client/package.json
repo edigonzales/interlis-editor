@@ -1,0 +1,13 @@
+{
+  "name": "interlis-glsp-client",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Placeholder client package for GLSP widgets.",
+  "scripts": {
+    "build": "echo 'GLSP client build placeholder'"
+  },
+  "dependencies": {
+  },
+  "devDependencies": {
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "name": "interlis-theia-app",
+  "version": "0.1.0",
+  "private": true,
+  "license": "Apache-2.0",
+  "scripts": {
+    "prepare": "yarn run build",
+    "build": "theia build",
+    "start": "theia start",
+    "start:electron": "theia start --plugins=local-dir:../plugins"
+  },
+  "dependencies": {
+    "@theia/core": "1.65.0",
+    "@theia/editor": "1.65.0",
+    "@theia/filesystem": "1.65.0",
+    "@theia/monaco": "1.65.0",
+    "@theia/navigator": "1.65.0",
+    "@theia/preferences": "1.65.0",
+    "@theia/terminal": "1.65.0",
+    "@theia/workspace": "1.65.0",
+    "@theia/electron": "1.65.0"
+  },
+  "devDependencies": {
+    "@theia/cli": "1.65.0"
+  }
+}
