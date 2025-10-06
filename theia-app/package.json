@@ -5,9 +5,9 @@
   "license": "Apache-2.0",
   "scripts": {
     "prepare": "yarn run build",
-    "build": "theia build --app-target=electron",
-    "start": "theia start --app-target=electron --plugins=local-dir:../plugins",
-    "start:web": "theia start",
+    "build": "theia build",
+    "start": "theia start --plugins=local-dir:../plugins",
+    "start:web": "theia start --app-target=browser --plugins=local-dir:../plugins",
     "start:electron": "theia start --app-target=electron --plugins=local-dir:../plugins"
   },
   "dependencies": {
@@ -24,5 +24,10 @@
   },
   "devDependencies": {
     "@theia/cli": "1.65.0"
-  }
+  },
+  "main": "lib/backend/electron-main.js",
+  "theia": {
+    "target": "electron"
+  },
+  "packageManager": "yarn@1.22.22"
 }
