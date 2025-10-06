@@ -1,0 +1,47 @@
+{
+  "name": "interlis-language-client",
+  "displayName": "INTERLIS Language Client",
+  "description": "VS Code client for the INTERLIS language server.",
+  "version": "0.0.1",
+  "publisher": "interlis",
+  "engines": {
+    "vscode": "^1.80.0"
+  },
+  "categories": [
+    "Programming Languages"
+  ],
+  "activationEvents": [
+    "onLanguage:ili"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "languages": [
+      {
+        "id": "ili",
+        "aliases": ["INTERLIS", "ili"],
+        "extensions": [".ili"],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "ili",
+        "scopeName": "source.ili",
+        "path": "./syntaxes/ili.tmLanguage.json"
+      }
+    ]
+  },
+  "scripts": {
+    "compile": "tsc -p ./",
+    "watch": "tsc -w -p ./"
+  },
+  "devDependencies": {
+    "@types/node": "18.19.3",
+    "@types/vscode": "1.80.0",
+    "tslint": "6.1.3",
+    "typescript": "5.2.2"
+  },
+  "dependencies": {
+    "vscode-languageclient": "8.2.0"
+  }
+}
