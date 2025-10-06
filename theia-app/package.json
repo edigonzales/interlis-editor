@@ -6,7 +6,8 @@
   "scripts": {
     "prepare": "yarn run build",
     "build": "theia build --app-target=electron",
-    "start": "theia start",
+    "start": "theia start --app-target=electron --plugins=local-dir:../plugins",
+    "start:web": "theia start",
     "start:electron": "theia start --app-target=electron --plugins=local-dir:../plugins"
   },
   "dependencies": {
@@ -18,10 +19,10 @@
     "@theia/navigator": "1.65.0",
     "@theia/preferences": "1.65.0",
     "@theia/terminal": "1.65.0",
-    "@theia/workspace": "1.65.0"
+    "@theia/workspace": "1.65.0",
+    "electron": "37.2.1"
   },
   "devDependencies": {
-    "@theia/cli": "1.65.0",
-    "electron": "37.2.1"
+    "@theia/cli": "1.65.0"
   }
 }
