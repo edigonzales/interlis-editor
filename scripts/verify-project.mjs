@@ -1,14 +1,17 @@
 import { readFile, stat } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { VSCODE_THEME_FILES, VSCODE_THEME_VERSION } from './vscode-theme-sources.mjs';
 
 const root = resolve(fileURLToPath(new URL('..', import.meta.url)));
 const readJson = async path => JSON.parse(await readFile(resolve(root, path), 'utf8'));
 const rootPackage = await readJson('package.json');
 const appPackage = await readJson('applications/electron/package.json');
 const productPackage = await readJson('theia-extensions/interlis-editor-product/package.json');
+const themePackage = await readJson('vscode-extensions/interlis-editor-themes/package.json');
 const builder = await readFile(resolve(root, 'applications/electron/electron-builder.yml'), 'utf8');
 const assetScript = await readFile(resolve(root, 'scripts/fetch-branding-assets.mjs'), 'utf8');
+const themeScript = await readFile(resolve(root, 'scripts/prepare-vscode-themes.mjs'), 'utf8');
 
 function assert(condition, message) {
     if (!condition) {
@@ -20,6 +23,7 @@ assert(appPackage.productName === 'INTERLIS Editor', 'Electron productName must 
 assert(appPackage.theia.frontend.config.applicationName === 'INTERLIS Editor', 'Theia applicationName must be INTERLIS Editor');
 assert(appPackage.theia.frontend.config.electron.appUserModelId === 'ch.interlis.editor', 'Unexpected appUserModelId');
 assert(appPackage.theia.frontend.config.electron.splashScreenOptions.content === 'resources/interlis-splash.html', 'Unexpected splash screen entry');
+assert(appPackage.theia.frontend.config.preferences['workbench.colorTheme'] === 'Dark 2026', 'Dark 2026 must be the default theme');
 assert(builder.includes('productName: INTERLIS Editor'), 'electron-builder product name is missing');
 assert(builder.includes('executableName: interlis-editor'), 'Stable executable name is missing');
 assert(builder.includes('resources/branding/ililogo1024.png'), 'Application logo is not configured');
@@ -48,10 +52,24 @@ assert(assetScript.includes(rootPackage.interlisEditor.theiaTemplateCommit) === 
 assert(assetScript.includes('0079e36663dbb2cc126cd10b568c07075bef666a'), 'Splash image hash is not pinned');
 assert(assetScript.includes('c130c2e5af2949a306d2c10ac53004a75fc11857'), 'Logo hash is not pinned');
 
+assert(rootPackage.interlisEditor.vscodeThemeVersion === VSCODE_THEME_VERSION, 'VS Code theme version mismatch');
+assert(rootPackage.scripts.themes === 'node scripts/prepare-vscode-themes.mjs', 'Theme preparation script is not registered');
+assert(rootPackage.scripts['download:plugins'].includes('yarn themes'), 'Plugin download must prepare the local themes');
+assert(rootPackage.scripts.build.includes('yarn themes'), 'Production build must prepare the local themes');
+assert(Object.keys(VSCODE_THEME_FILES).length === 8, 'Expected the two complete VS Code 2026 theme inheritance chains');
+assert(themeScript.includes('gitBlobSha1'), 'Theme downloader must verify Git blob SHA-1 values');
+assert(themePackage.publisher === 'interlis' && themePackage.name === 'interlis-editor-themes', 'Unexpected theme extension identity');
+const themeIds = themePackage.contributes?.themes?.map(theme => theme.id).sort();
+assert(JSON.stringify(themeIds) === JSON.stringify(['Dark 2026', 'Light 2026']), 'Theme extension must contribute Dark 2026 and Light 2026');
+
 for (const required of [
     'applications/electron/resources/interlis-splash.html',
     'theia-extensions/interlis-editor-product/src/browser/interlis-editor-about-dialog.tsx',
     'theia-extensions/interlis-editor-product/src/browser/interlis-editor-getting-started-widget.tsx',
+    'vscode-extensions/interlis-editor-themes/package.json',
+    'vscode-extensions/interlis-editor-themes/LICENSE-VSCODE.txt',
+    'scripts/prepare-vscode-themes.mjs',
+    'scripts/vscode-theme-sources.mjs',
     'examples/MinimalModel.ili',
 ]) {
     assert((await stat(resolve(root, required))).isFile(), `Missing required file: ${required}`);
@@ -68,4 +86,6 @@ for (const forbidden of ['glsp', 'lsp-server', 'theia-app', 'vscode-extension', 
     }
 }
 
-console.log(`Project verification passed (Theia ${expectedTheia}, extension ${rootPackage.interlisEditor.extensionVersion}).`);
+console.log(
+    `Project verification passed (Theia ${expectedTheia}, extension ${rootPackage.interlisEditor.extensionVersion}, VS Code themes ${VSCODE_THEME_VERSION}).`,
+);
