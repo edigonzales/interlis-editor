@@ -17,7 +17,9 @@ interlis-editor/
 ├── applications/electron/                 Thin Electron product shell
 ├── theia-extensions/interlis-editor-product/
 │   └── src/browser/                       All product-specific UI code
-├── scripts/                               Asset, consistency and upgrade tools
+├── vscode-extensions/interlis-editor-themes/
+│                                           Local theme extension manifest/license
+├── scripts/                               Asset, theme, consistency and upgrade tools
 ├── examples/                              Smoke-test workspace
 └── plugins/                               Generated built-in extensions
 ```
@@ -30,6 +32,8 @@ The separation is deliberate:
   `interlis-editor-product-ext`.
 - The INTERLIS language tooling remains a normal VS Code extension and is
   downloaded from Open VSX during the build.
+- The VS Code 2026 themes remain a normal VS Code theme extension. Their source
+  files are downloaded from a pinned VS Code release and placed in `plugins/`.
 - Eclipse Theia itself is consumed only as versioned npm packages. No Theia
   source files are patched or copied into this repository.
 
@@ -75,6 +79,17 @@ The downloaded files are generated build inputs and are ignored by Git. Changing
 a source URL or hash requires an explicit edit in
 `scripts/fetch-branding-assets.mjs`.
 
+## Light and dark themes
+
+The editor bundles the official **Dark 2026** and **Light 2026** color themes
+from VS Code 1.124.2. Dark 2026 is the product default; both themes remain
+selectable through the normal Theia color-theme command.
+
+`yarn themes` downloads the complete inheritance chains from the pinned VS Code
+tag and validates every file against its Git blob SHA-1. The generated extension
+is written to `plugins/interlis-editor-themes` and is packaged with the desktop
+application. The Microsoft MIT license is included in the extension.
+
 ## Updating Eclipse Theia
 
 All direct `@theia/*` dependencies must use one identical, exact version. Update
@@ -90,7 +105,8 @@ yarn package:preview
 ```
 
 `yarn verify` fails when Theia packages diverge, custom product code leaks into
-the application shell, branding is not pinned, or the product name changes.
+the application shell, branding or themes are not pinned, or the product name
+changes.
 
 ## Validation
 
@@ -99,10 +115,11 @@ The GitHub Actions workflow performs:
 1. project and version consistency checks;
 2. cryptographic validation of both downloaded branding assets;
 3. download and inspection of the built-in INTERLIS extension;
-4. TypeScript compilation of the custom Product Extension;
-5. production Theia/Electron build;
-6. Electron packaging to an unpacked Linux application;
-7. command-line and graphical startup smoke tests using an example `.ili` file.
+4. download and cryptographic validation of Dark 2026 and Light 2026;
+5. TypeScript compilation of the custom Product Extension;
+6. production Theia/Electron build;
+7. Electron packaging to an unpacked Linux application;
+8. command-line and graphical startup smoke tests using an example `.ili` file.
 
 ## License
 
