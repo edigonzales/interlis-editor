@@ -25,7 +25,8 @@
         "preferences": {
           "toolbar.showToolbar": true,
           "security.workspace.trust.enabled": false,
-          "workbench.startupEditor": "welcomePage"
+          "workbench.startupEditor": "welcomePage",
+          "workbench.colorTheme": "Dark 2026"
         },
         "electron": {
           "appUserModelId": "ch.interlis.editor",
