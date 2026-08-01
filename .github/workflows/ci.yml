@@ -48,10 +48,10 @@ jobs:
       - name: Fetch and verify branding
         run: yarn assets
 
-      - name: Download built-in extensions
+      - name: Download built-in extensions and prepare themes
         run: yarn download:plugins
 
-      - name: Verify INTERLIS extension
+      - name: Verify INTERLIS extension and themes
         run: yarn verify:plugins
 
       - name: Build production application
