@@ -1,6 +1,5 @@
 import * as React from 'react';
 import { Message } from '@theia/core/lib/browser';
-import { PreferenceService } from '@theia/core/lib/common';
 import { inject, injectable } from '@theia/core/shared/inversify';
 import { GettingStartedWidget } from '@theia/getting-started/lib/browser/getting-started-widget';
 import { VSXEnvironment } from '@theia/vsx-registry/lib/common/vsx-environment';
@@ -10,10 +9,7 @@ import { renderIntroduction, renderProductName, renderResources } from './brandi
 export class InterlisEditorGettingStartedWidget extends GettingStartedWidget {
 
     @inject(VSXEnvironment)
-    protected readonly environment: VSXEnvironment;
-
-    @inject(PreferenceService)
-    protected readonly preferenceService: PreferenceService;
+    protected readonly environment!: VSXEnvironment;
 
     protected vscodeApiVersion = 'unknown';
 
