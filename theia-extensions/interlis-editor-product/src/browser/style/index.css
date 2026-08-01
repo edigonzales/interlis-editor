@@ -1,0 +1,80 @@
+.interlis-editor-welcome {
+    --interlis-accent: #315c8c;
+    --interlis-muted: var(--theia-descriptionForeground);
+}
+
+.interlis-editor-heading h1 {
+    margin-bottom: 0.25rem;
+    font-size: 2rem;
+    font-weight: 600;
+    letter-spacing: -0.015em;
+}
+
+.interlis-editor-heading p,
+.interlis-editor-version,
+.interlis-about-version {
+    color: var(--theia-descriptionForeground);
+}
+
+.interlis-editor-section {
+    max-width: 720px;
+    margin-top: 1.75rem;
+    line-height: 1.55;
+}
+
+.interlis-editor-section h3 {
+    margin-bottom: 0.5rem;
+    color: var(--theia-foreground);
+}
+
+.interlis-editor-section ul {
+    margin: 0.5rem 0 0;
+    padding-left: 1.25rem;
+}
+
+.interlis-editor-section li {
+    margin: 0.35rem 0;
+}
+
+.interlis-editor-logo,
+.interlis-about-logo {
+    background: url('./ililogo1024.png') center / contain no-repeat;
+}
+
+.interlis-editor-logo {
+    width: 220px;
+    height: 180px;
+    margin: 0 auto 1.25rem;
+}
+
+.interlis-editor-actions {
+    min-width: 300px;
+}
+
+.interlis-about-layout {
+    display: grid;
+    grid-template-columns: 132px minmax(300px, 1fr);
+    gap: 24px;
+    align-items: start;
+    max-width: 680px;
+}
+
+.interlis-about-logo {
+    width: 128px;
+    height: 128px;
+}
+
+.interlis-about-layout h1 {
+    margin-top: 0;
+}
+
+@media (max-width: 720px) {
+    .interlis-about-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .interlis-about-logo {
+        width: 96px;
+        height: 96px;
+    }
+}
