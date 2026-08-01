@@ -8,7 +8,7 @@ import { renderAboutText } from './branding-util';
 export class InterlisEditorAboutDialog extends AboutDialog {
 
     @inject(VSXEnvironment)
-    protected readonly environment: VSXEnvironment;
+    protected readonly environment!: VSXEnvironment;
 
     protected vscodeApiVersion = 'unknown';
 
