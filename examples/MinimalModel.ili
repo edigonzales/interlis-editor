@@ -1,0 +1,16 @@
+INTERLIS 2.4;
+
+MODEL MinimalModel (en)
+AT "https://example.org/interlis-editor"
+VERSION "2026-08-01" =
+
+  TOPIC Base =
+
+    CLASS Building =
+      Name : MANDATORY TEXT*80;
+      Height : 0.0 .. 1000.0 [m];
+    END Building;
+
+  END Base;
+
+END MinimalModel.

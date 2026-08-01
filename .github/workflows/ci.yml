@@ -1,0 +1,92 @@
+name: CI
+
+on:
+  push:
+    branches: [main, "agent/**"]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-smoke-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 75
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install native Linux dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install --no-install-recommends -y \
+            build-essential \
+            pkg-config \
+            libx11-dev \
+            libxkbfile-dev \
+            libsecret-1-dev \
+            xvfb
+
+      - name: Activate Yarn 1
+        run: |
+          corepack enable
+          corepack prepare yarn@1.22.22 --activate
+          yarn --version
+
+      - name: Install dependencies
+        run: yarn install --non-interactive --network-timeout 600000
+
+      - name: Verify project structure
+        run: yarn verify
+
+      - name: Fetch and verify branding
+        run: yarn assets
+
+      - name: Download built-in extensions and prepare themes
+        run: yarn download:plugins
+
+      - name: Verify INTERLIS extension and themes
+        run: yarn verify:plugins
+
+      - name: Build production application
+        run: yarn build
+
+      - name: Run project tests
+        run: yarn test
+
+      - name: Package unpacked Linux application
+        run: yarn package:preview
+
+      - name: Verify executable metadata
+        run: ./applications/electron/dist/linux-unpacked/interlis-editor --no-sandbox --version
+
+      - name: Graphical startup smoke test
+        shell: bash
+        run: |
+          set +e
+          timeout 25s xvfb-run -a \
+            ./applications/electron/dist/linux-unpacked/interlis-editor \
+            --no-sandbox \
+            "$GITHUB_WORKSPACE/examples/MinimalModel.ili" \
+            --electronUserData "$RUNNER_TEMP/interlis-editor-smoke" \
+            > "$RUNNER_TEMP/interlis-editor-smoke.log" 2>&1
+          status=$?
+          set -e
+          cat "$RUNNER_TEMP/interlis-editor-smoke.log"
+          if [ "$status" -ne 0 ] && [ "$status" -ne 124 ]; then
+            exit "$status"
+          fi
+
+      - name: Upload unpacked application
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: interlis-editor-linux-unpacked
+          path: applications/electron/dist/linux-unpacked
+          if-no-files-found: warn

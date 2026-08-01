@@ -1,0 +1,72 @@
+appId: ch.interlis.editor
+productName: INTERLIS Editor
+executableName: interlis-editor
+copyright: Copyright © 2026 INTERLIS Editor contributors
+electronDist: ../../node_modules/electron/dist
+electronVersion: 42.3.0
+asar: true
+asarUnpack:
+  - "**/lib/backend/native/**"
+  - "**/lib/build/Release/**"
+nodeGypRebuild: false
+npmRebuild: false
+
+directories:
+  buildResources: resources
+  output: dist
+
+files:
+  - src-gen
+  - lib
+  - resources
+  - scripts
+  - package.json
+  - "!**/node_modules/**"
+
+extraResources:
+  - from: ../../plugins
+    to: app/plugins
+
+publish:
+  provider: github
+  owner: edigonzales
+  repo: interlis-editor
+  releaseType: release
+
+win:
+  icon: resources/branding/ililogo1024.png
+  target:
+    - nsis
+
+mac:
+  icon: resources/branding/ililogo1024.png
+  category: public.app-category.developer-tools
+  darkModeSupport: true
+  target:
+    - dmg
+    - zip
+
+linux:
+  icon: resources/branding/ililogo1024.png
+  category: Development
+  vendor: INTERLIS Editor contributors
+  target:
+    - AppImage
+    - deb
+
+nsis:
+  menuCategory: true
+  oneClick: false
+  perMachine: false
+  allowToChangeInstallationDirectory: true
+  runAfterFinish: false
+  artifactName: ${productName}-Setup-${version}-${arch}.${ext}
+
+dmg:
+  artifactName: ${productName}-${version}-${arch}.${ext}
+
+deb:
+  artifactName: ${productName}-${version}-${arch}.${ext}
+
+appImage:
+  artifactName: ${productName}-${version}-${arch}.${ext}

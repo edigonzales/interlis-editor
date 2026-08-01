@@ -1,0 +1,43 @@
+{
+  "private": true,
+  "name": "interlis-editor-product-ext",
+  "version": "0.1.0",
+  "description": "Product-specific branding and UI for INTERLIS Editor.",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/edigonzales/interlis-editor.git"
+  },
+  "dependencies": {
+    "@theia/core": "1.74.0",
+    "@theia/getting-started": "1.74.0",
+    "@theia/vsx-registry": "1.74.0",
+    "inversify": "6.2.2"
+  },
+  "devDependencies": {
+    "@types/react": "18.3.28",
+    "@types/react-dom": "18.3.7",
+    "rimraf": "2.7.1",
+    "typescript": "5.9.3"
+  },
+  "peerDependencies": {
+    "react": "18.3.1"
+  },
+  "theiaExtensions": [
+    {
+      "frontend": "lib/browser/interlis-editor-frontend-module"
+    }
+  ],
+  "keywords": [
+    "theia-extension"
+  ],
+  "files": [
+    "lib",
+    "src"
+  ],
+  "scripts": {
+    "clean": "rimraf lib *.tsbuildinfo",
+    "build": "tsc -b",
+    "test": "node ../../scripts/verify-extension-build.mjs"
+  }
+}

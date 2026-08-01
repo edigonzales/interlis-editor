@@ -1,0 +1,10 @@
+node_modules/
+plugins/
+**/lib/
+**/src-gen/
+**/dist/
+**/*.tsbuildinfo
+applications/electron/resources/branding/*.png
+theia-extensions/interlis-editor-product/src/browser/style/ililogo1024.png
+.DS_Store
+*.log
