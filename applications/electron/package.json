@@ -97,7 +97,6 @@
   },
   "devDependencies": {
     "@theia/cli": "1.74.0",
-    "@theia/native-webpack-plugin": "1.74.0",
     "app-builder-lib": "26.0.12",
     "electron": "42.3.0",
     "electron-builder": "26.0.12",
