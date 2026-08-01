@@ -64,7 +64,7 @@ jobs:
         run: yarn package:preview
 
       - name: Verify executable metadata
-        run: ./applications/electron/dist/linux-unpacked/interlis-editor --version
+        run: ./applications/electron/dist/linux-unpacked/interlis-editor --no-sandbox --version
 
       - name: Graphical startup smoke test
         shell: bash
@@ -72,6 +72,7 @@ jobs:
           set +e
           timeout 25s xvfb-run -a \
             ./applications/electron/dist/linux-unpacked/interlis-editor \
+            --no-sandbox \
             "$GITHUB_WORKSPACE/examples/MinimalModel.ili" \
             --electronUserData "$RUNNER_TEMP/interlis-editor-smoke" \
             > "$RUNNER_TEMP/interlis-editor-smoke.log" 2>&1
