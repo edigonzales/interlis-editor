@@ -22,6 +22,17 @@ jobs:
         with:
           node-version: 22
 
+      - name: Install native Linux dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install --no-install-recommends -y \
+            build-essential \
+            pkg-config \
+            libx11-dev \
+            libxkbfile-dev \
+            libsecret-1-dev \
+            xvfb
+
       - name: Activate Yarn 1
         run: |
           corepack enable
