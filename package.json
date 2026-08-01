@@ -21,7 +21,8 @@
   "interlisEditor": {
     "theiaVersion": "1.74.0",
     "theiaTemplateCommit": "208ea0ec23bc738801d57c890bf21cd278f77896",
-    "extensionVersion": "0.0.31"
+    "extensionVersion": "0.0.31",
+    "vscodeThemeVersion": "1.124.2"
   },
   "workspaces": [
     "applications/*",
@@ -29,12 +30,13 @@
   ],
   "scripts": {
     "assets": "node scripts/fetch-branding-assets.mjs",
+    "themes": "node scripts/prepare-vscode-themes.mjs",
     "verify": "node scripts/verify-project.mjs",
     "verify:plugins": "node scripts/verify-plugins.mjs",
     "build:extensions": "yarn workspace interlis-editor-product-ext build",
     "build:application": "yarn workspace interlis-editor-electron-app build:prod",
-    "build": "yarn assets && yarn build:extensions && yarn build:application",
-    "download:plugins": "theia download:plugins --rate-limit=15 --parallel=false",
+    "build": "yarn assets && yarn themes && yarn build:extensions && yarn build:application",
+    "download:plugins": "theia download:plugins --rate-limit=15 --parallel=false && yarn themes",
     "test": "yarn verify && yarn workspace interlis-editor-product-ext test",
     "package:preview": "yarn workspace interlis-editor-electron-app package:preview",
     "start": "yarn workspace interlis-editor-electron-app start",
