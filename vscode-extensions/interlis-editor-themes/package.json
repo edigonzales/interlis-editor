@@ -1,0 +1,30 @@
+{
+  "name": "interlis-editor-themes",
+  "displayName": "INTERLIS Editor Themes",
+  "description": "VS Code 2026 light and dark themes bundled with INTERLIS Editor.",
+  "version": "0.1.0",
+  "publisher": "interlis",
+  "license": "MIT",
+  "engines": {
+    "vscode": "*"
+  },
+  "categories": [
+    "Themes"
+  ],
+  "contributes": {
+    "themes": [
+      {
+        "id": "Light 2026",
+        "label": "Light 2026",
+        "uiTheme": "vs",
+        "path": "./themes/2026-light.json"
+      },
+      {
+        "id": "Dark 2026",
+        "label": "Dark 2026",
+        "uiTheme": "vs-dark",
+        "path": "./themes/2026-dark.json"
+      }
+    ]
+  }
+}
