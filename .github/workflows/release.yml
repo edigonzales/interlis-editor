@@ -1,25 +1,28 @@
 name: Release
 
 on:
-  push:
-    branches:
-      - main
-    tags:
-      - 'v*'
+  workflow_run:
+    workflows:
+      - CI
+    types:
+      - completed
 
 permissions:
   contents: write
 
 concurrency:
-  group: release-${{ github.ref_name }}
+  group: release-${{ github.event.workflow_run.head_branch }}
   cancel-in-progress: false
 
 jobs:
   package:
     name: Package ${{ matrix.name }}
     if: >-
-      github.ref == 'refs/heads/main' ||
-      (startsWith(github.ref, 'refs/tags/v') && !contains(github.ref_name, '-'))
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.event == 'push' &&
+      (github.event.workflow_run.head_branch == 'main' ||
+      (startsWith(github.event.workflow_run.head_branch, 'v') &&
+      !contains(github.event.workflow_run.head_branch, '-')))
     runs-on: ${{ matrix.os }}
     timeout-minutes: 75
     strategy:
@@ -39,6 +42,9 @@ jobs:
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+          fetch-depth: 0
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -69,14 +75,14 @@ jobs:
         id: release
         shell: bash
         env:
-          RELEASE_REF: ${{ github.ref }}
-          RELEASE_REF_NAME: ${{ github.ref_name }}
+          SOURCE_REF_NAME: ${{ github.event.workflow_run.head_branch }}
+          SOURCE_SHA: ${{ github.event.workflow_run.head_sha }}
         run: |
           set -Eeuo pipefail
 
           app_version="$(node -p "require('./applications/electron/package.json').version")"
 
-          if [[ "$RELEASE_REF" == "refs/heads/main" ]]; then
+          if [[ "$SOURCE_REF_NAME" == "main" ]]; then
             base_version="${app_version%%-*}"
             release_version="${base_version}-snapshot"
 
@@ -89,14 +95,14 @@ jobs:
           fs.writeFileSync(path, `${JSON.stringify(packageJson, null, 2)}\n`);
           NODE
           else
-            if [[ ! "$RELEASE_REF_NAME" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-              echo "Unsupported stable release tag: $RELEASE_REF_NAME" >&2
+            if [[ ! "$SOURCE_REF_NAME" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+              echo "Unsupported stable release tag: $SOURCE_REF_NAME" >&2
               exit 1
             fi
 
-            release_version="${RELEASE_REF_NAME#v}"
+            release_version="${SOURCE_REF_NAME#v}"
             if [[ "$release_version" != "$app_version" ]]; then
-              echo "Release tag $RELEASE_REF_NAME does not match application version $app_version" >&2
+              echo "Release tag $SOURCE_REF_NAME does not match application version $app_version" >&2
               exit 1
             fi
           fi
@@ -104,13 +110,11 @@ jobs:
           {
             echo "version=$release_version"
             echo "tag=v$release_version"
+            echo "source-sha=$SOURCE_SHA"
           } >> "$GITHUB_OUTPUT"
 
       - name: Install dependencies
         run: yarn install --frozen-lockfile --non-interactive --network-timeout 600000
-
-      - name: Verify project structure
-        run: yarn verify
 
       - name: Fetch and verify branding
         run: yarn assets
@@ -118,14 +122,8 @@ jobs:
       - name: Download built-in extensions and prepare themes
         run: yarn download:plugins
 
-      - name: Verify INTERLIS Language Tools extension and themes
-        run: yarn verify:plugins
-
       - name: Build production application
         run: yarn build
-
-      - name: Run project tests
-        run: yarn test
 
       - name: Package macOS ARM64
         if: matrix.platform == 'mac'
@@ -202,8 +200,11 @@ jobs:
     needs: package
     if: >-
       needs.package.result == 'success' &&
-      (github.ref == 'refs/heads/main' ||
-      (startsWith(github.ref, 'refs/tags/v') && !contains(github.ref_name, '-')))
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.event == 'push' &&
+      (github.event.workflow_run.head_branch == 'main' ||
+      (startsWith(github.event.workflow_run.head_branch, 'v') &&
+      !contains(github.event.workflow_run.head_branch, '-')))
     runs-on: ubuntu-24.04
     timeout-minutes: 20
 
@@ -211,6 +212,7 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v4
         with:
+          ref: ${{ github.event.workflow_run.head_sha }}
           fetch-depth: 0
 
       - name: Download packaged artifacts
@@ -223,20 +225,25 @@ jobs:
         id: release
         shell: bash
         env:
-          RELEASE_REF: ${{ github.ref }}
-          RELEASE_REF_NAME: ${{ github.ref_name }}
+          SOURCE_REF_NAME: ${{ github.event.workflow_run.head_branch }}
+          SOURCE_SHA: ${{ github.event.workflow_run.head_sha }}
         run: |
           set -Eeuo pipefail
 
           app_version="$(node -p "require('./applications/electron/package.json').version")"
-          if [[ "$RELEASE_REF" == "refs/heads/main" ]]; then
+          if [[ "$SOURCE_REF_NAME" == "main" ]]; then
             release_version="${app_version%%-*}-snapshot"
             channel=snapshot
           else
-            release_version="${RELEASE_REF_NAME#v}"
+            if [[ ! "$SOURCE_REF_NAME" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+              echo "Unsupported stable release tag: $SOURCE_REF_NAME" >&2
+              exit 1
+            fi
+
+            release_version="${SOURCE_REF_NAME#v}"
             channel=stable
             if [[ "$release_version" != "$app_version" ]]; then
-              echo "Release tag $RELEASE_REF_NAME does not match application version $app_version" >&2
+              echo "Release tag $SOURCE_REF_NAME does not match application version $app_version" >&2
               exit 1
             fi
           fi
@@ -245,6 +252,7 @@ jobs:
             echo "channel=$channel"
             echo "version=$release_version"
             echo "tag=v$release_version"
+            echo "source-sha=$SOURCE_SHA"
           } >> "$GITHUB_OUTPUT"
 
       - name: List release assets
@@ -282,7 +290,7 @@ jobs:
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
-          GITHUB_SHA: ${{ github.sha }}
+          SOURCE_SHA: ${{ github.event.workflow_run.head_sha }}
           RELEASE_TAG: ${{ steps.release.outputs.tag }}
           RELEASE_VERSION: ${{ steps.release.outputs.version }}
         run: |
@@ -299,21 +307,21 @@ jobs:
           if gh api "repos/${GITHUB_REPOSITORY}/git/ref/tags/${RELEASE_TAG}" >/dev/null 2>&1; then
             gh api --method PATCH \
               "repos/${GITHUB_REPOSITORY}/git/refs/tags/${RELEASE_TAG}" \
-              -f sha="$GITHUB_SHA" \
+              -f sha="$SOURCE_SHA" \
               -F force=true >/dev/null
           fi
 
           if ! gh release view "$RELEASE_TAG" >/dev/null 2>&1; then
             gh release create "$RELEASE_TAG" \
-              --target "$GITHUB_SHA" \
+              --target "$SOURCE_SHA" \
               --prerelease \
               --latest=false \
               --title "INTERLIS Editor $RELEASE_VERSION snapshot" \
-              --notes "Automatically updated from main at $GITHUB_SHA."
+              --notes "Automatically updated from main at $SOURCE_SHA."
           fi
 
           gh release upload "$RELEASE_TAG" release-assets/* --clobber
           gh release edit "$RELEASE_TAG" \
             --prerelease \
             --title "INTERLIS Editor $RELEASE_VERSION snapshot" \
-            --notes "Automatically updated from main at $GITHUB_SHA."
+            --notes "Automatically updated from main at $SOURCE_SHA."
