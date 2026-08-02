@@ -30,7 +30,7 @@ jobs:
             os: macos-14
             platform: mac
           - name: windows-x64
-            os: windows-2025
+            os: windows-2022
             platform: win
           - name: linux-x64
             os: ubuntu-24.04
@@ -129,15 +129,15 @@ jobs:
 
       - name: Package macOS ARM64
         if: matrix.platform == 'mac'
-        run: yarn workspace interlis-editor-electron-app package -- --mac --arm64
+        run: yarn workspace interlis-editor-electron-app package --mac --arm64
 
       - name: Package Windows x64
         if: matrix.platform == 'win'
-        run: yarn workspace interlis-editor-electron-app package -- --win --x64
+        run: yarn workspace interlis-editor-electron-app package --win --x64
 
       - name: Package Linux x64
         if: matrix.platform == 'linux'
-        run: yarn workspace interlis-editor-electron-app package -- --linux --x64
+        run: yarn workspace interlis-editor-electron-app package --linux --x64
 
       - name: Collect release assets
         shell: bash

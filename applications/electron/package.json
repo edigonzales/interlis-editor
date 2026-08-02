@@ -6,7 +6,10 @@
   "version": "0.1.0",
   "main": "scripts/theia-electron-main.js",
   "license": "MIT",
-  "author": "INTERLIS Editor contributors",
+  "author": {
+    "name": "INTERLIS Editor contributors",
+    "email": "contact@interlis.guru"
+  },
   "homepage": "https://github.com/edigonzales/interlis-editor#readme",
   "repository": {
     "type": "git",

@@ -22,6 +22,7 @@ function assert(condition, message) {
 }
 
 assert(appPackage.productName === 'INTERLIS Editor', 'Electron productName must be INTERLIS Editor');
+assert(appPackage.author?.email === 'contact@interlis.guru', 'Electron package maintainer email is missing');
 assert(appPackage.theia.frontend.config.applicationName === 'INTERLIS Editor', 'Theia applicationName must be INTERLIS Editor');
 assert(appPackage.theia.frontend.config.electron.appUserModelId === 'ch.interlis.editor', 'Unexpected appUserModelId');
 assert(appPackage.theia.frontend.config.electron.splashScreenOptions.content === 'resources/interlis-splash.html', 'Unexpected splash screen entry');
