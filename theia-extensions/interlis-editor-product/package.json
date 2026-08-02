@@ -12,7 +12,7 @@
     "@theia/core": "1.74.0",
     "@theia/getting-started": "1.74.0",
     "@theia/vsx-registry": "1.74.0",
-    "inversify": "6.2.2"
+    "inversify": "8.2.3"
   },
   "devDependencies": {
     "@types/react": "18.3.28",
