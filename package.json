@@ -49,7 +49,7 @@
   },
   "devDependencies": {
     "@theia/cli": "1.74.0",
-    "rimraf": "2.7.1"
+    "rimraf": "6.1.3"
   },
   "theiaPluginsDir": "plugins",
   "theiaPlugins": {
