@@ -31,6 +31,7 @@ assert(appPackage.theia.frontend.config.preferences['editor.fontFamily'] === 'Je
 assert(appPackage.theia.frontend.config.preferences['terminal.integrated.fontFamily'] === "'MesloLGS NF', monospace", 'MesloLGS NF must be the default terminal font');
 assert(builder.includes('productName: INTERLIS Editor'), 'electron-builder product name is missing');
 assert(builder.includes('executableName: interlis-editor'), 'Stable executable name is missing');
+assert(builder.includes('vPrefixedTagName: true'), 'GitHub release tags must use the v prefix');
 assert(builder.includes('resources/branding/interlis-app-icon.icns'), 'macOS application icon is not configured');
 assert(builder.includes('resources/branding/interlis-app-icon.png'), 'Cross-platform application icon is not configured');
 assert(builder.includes('resources/branding/ililogo1024.png') === false, 'Product logo must not be used as the packaged application icon');

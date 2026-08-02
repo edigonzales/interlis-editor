@@ -31,6 +31,7 @@ publish:
   provider: github
   owner: edigonzales
   repo: interlis-editor
+  vPrefixedTagName: true
   releaseType: release
 
 win:

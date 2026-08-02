@@ -1,0 +1,305 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-${{ github.ref_name }}
+  cancel-in-progress: false
+
+jobs:
+  package:
+    name: Package ${{ matrix.name }}
+    if: >-
+      github.ref == 'refs/heads/main' ||
+      (startsWith(github.ref, 'refs/tags/v') && !contains(github.ref_name, '-'))
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 75
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: macos-arm64
+            os: macos-14
+            platform: mac
+          - name: windows-x64
+            os: windows-2025
+            platform: win
+          - name: linux-x64
+            os: ubuntu-24.04
+            platform: linux
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install native Linux dependencies
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install --no-install-recommends -y \
+            build-essential \
+            pkg-config \
+            libx11-dev \
+            libxkbfile-dev \
+            libsecret-1-dev \
+            xvfb
+
+      - name: Activate Yarn 1
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          corepack enable
+          corepack prepare yarn@1.22.22 --activate
+          yarn --version
+
+      - name: Prepare release version
+        id: release
+        shell: bash
+        env:
+          RELEASE_REF: ${{ github.ref }}
+          RELEASE_REF_NAME: ${{ github.ref_name }}
+        run: |
+          set -Eeuo pipefail
+
+          app_version="$(node -p "require('./applications/electron/package.json').version")"
+
+          if [[ "$RELEASE_REF" == "refs/heads/main" ]]; then
+            base_version="${app_version%%-*}"
+            release_version="${base_version}-snapshot"
+
+            node - "$release_version" <<'NODE'
+          const fs = require('node:fs');
+          const path = 'applications/electron/package.json';
+          const version = process.argv[2];
+          const packageJson = JSON.parse(fs.readFileSync(path, 'utf8'));
+          packageJson.version = version;
+          fs.writeFileSync(path, `${JSON.stringify(packageJson, null, 2)}\n`);
+          NODE
+          else
+            if [[ ! "$RELEASE_REF_NAME" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+              echo "Unsupported stable release tag: $RELEASE_REF_NAME" >&2
+              exit 1
+            fi
+
+            release_version="${RELEASE_REF_NAME#v}"
+            if [[ "$release_version" != "$app_version" ]]; then
+              echo "Release tag $RELEASE_REF_NAME does not match application version $app_version" >&2
+              exit 1
+            fi
+          fi
+
+          {
+            echo "version=$release_version"
+            echo "tag=v$release_version"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Install dependencies
+        run: yarn install --non-interactive --network-timeout 600000
+
+      - name: Verify project structure
+        run: yarn verify
+
+      - name: Fetch and verify branding
+        run: yarn assets
+
+      - name: Download built-in extensions and prepare themes
+        run: yarn download:plugins
+
+      - name: Verify INTERLIS Language Tools extension and themes
+        run: yarn verify:plugins
+
+      - name: Build production application
+        run: yarn build
+
+      - name: Run project tests
+        run: yarn test
+
+      - name: Package macOS ARM64
+        if: matrix.platform == 'mac'
+        run: yarn workspace interlis-editor-electron-app package -- --mac --arm64
+
+      - name: Package Windows x64
+        if: matrix.platform == 'win'
+        run: yarn workspace interlis-editor-electron-app package -- --win --x64
+
+      - name: Package Linux x64
+        if: matrix.platform == 'linux'
+        run: yarn workspace interlis-editor-electron-app package -- --linux --x64
+
+      - name: Collect release assets
+        shell: bash
+        env:
+          PACKAGE_PLATFORM: ${{ matrix.platform }}
+        run: |
+          set -Eeuo pipefail
+
+          node <<'NODE'
+          const fs = require('node:fs');
+          const path = require('node:path');
+
+          const platform = process.env.PACKAGE_PLATFORM;
+          const dist = 'applications/electron/dist';
+          const output = 'release-assets';
+          const files = fs.readdirSync(dist, { withFileTypes: true })
+              .filter(entry => entry.isFile())
+              .map(entry => entry.name)
+              .filter(name => /\.(dmg|zip|exe|AppImage|deb|blockmap)$/i.test(name) || /^latest(?:-mac|-linux)?\.yml$/i.test(name));
+
+          const required = {
+              mac: [name => name.endsWith('.dmg'), name => name.endsWith('.zip'), name => name === 'latest-mac.yml'],
+              win: [name => name.endsWith('.exe'), name => name === 'latest.yml'],
+              linux: [name => name.endsWith('.AppImage'), name => name.endsWith('.deb'), name => name === 'latest-linux.yml'],
+          }[platform];
+
+          if (!required || required.some(predicate => !files.some(predicate))) {
+              throw new Error(`Missing expected ${platform} release assets. Found: ${files.join(', ')}`);
+          }
+
+          fs.mkdirSync(output, { recursive: true });
+          for (const file of files) {
+              fs.copyFileSync(path.join(dist, file), path.join(output, file));
+          }
+          console.log(`Collected ${files.length} ${platform} release assets.`);
+          NODE
+
+      - name: Upload packaged artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: interlis-editor-${{ matrix.name }}
+          path: release-assets
+          if-no-files-found: error
+          compression-level: 0
+
+  publish:
+    name: Publish GitHub release
+    needs: package
+    if: >-
+      needs.package.result == 'success' &&
+      (github.ref == 'refs/heads/main' ||
+      (startsWith(github.ref, 'refs/tags/v') && !contains(github.ref_name, '-')))
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Download packaged artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: release-assets
+          merge-multiple: true
+
+      - name: Determine release channel
+        id: release
+        shell: bash
+        env:
+          RELEASE_REF: ${{ github.ref }}
+          RELEASE_REF_NAME: ${{ github.ref_name }}
+        run: |
+          set -Eeuo pipefail
+
+          app_version="$(node -p "require('./applications/electron/package.json').version")"
+          if [[ "$RELEASE_REF" == "refs/heads/main" ]]; then
+            release_version="${app_version%%-*}-snapshot"
+            channel=snapshot
+          else
+            release_version="${RELEASE_REF_NAME#v}"
+            channel=stable
+            if [[ "$release_version" != "$app_version" ]]; then
+              echo "Release tag $RELEASE_REF_NAME does not match application version $app_version" >&2
+              exit 1
+            fi
+          fi
+
+          {
+            echo "channel=$channel"
+            echo "version=$release_version"
+            echo "tag=v$release_version"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: List release assets
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          find release-assets -maxdepth 1 -type f -print | sort
+          test -n "$(find release-assets -maxdepth 1 -type f -print -quit)"
+
+      - name: Create and publish stable release
+        if: steps.release.outputs.channel == 'stable'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ steps.release.outputs.tag }}
+          RELEASE_VERSION: ${{ steps.release.outputs.version }}
+        run: |
+          set -Eeuo pipefail
+
+          if gh release view "$RELEASE_TAG" >/dev/null 2>&1; then
+            echo "A release already exists for $RELEASE_TAG; stable releases are immutable by policy." >&2
+            exit 1
+          fi
+
+          gh release create "$RELEASE_TAG" release-assets/* \
+            --draft \
+            --verify-tag \
+            --generate-notes \
+            --latest \
+            --title "INTERLIS Editor $RELEASE_VERSION"
+          gh release edit "$RELEASE_TAG" --draft=false --latest
+
+      - name: Create or update snapshot release
+        if: steps.release.outputs.channel == 'snapshot'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GITHUB_SHA: ${{ github.sha }}
+          RELEASE_TAG: ${{ steps.release.outputs.tag }}
+          RELEASE_VERSION: ${{ steps.release.outputs.version }}
+        run: |
+          set -Eeuo pipefail
+
+          if gh release view "$RELEASE_TAG" >/dev/null 2>&1; then
+            immutable="$(gh release view "$RELEASE_TAG" --json isImmutable --jq '.isImmutable')"
+            if [[ "$immutable" == "true" ]]; then
+              echo "The snapshot release $RELEASE_TAG is immutable and cannot be updated." >&2
+              exit 1
+            fi
+          fi
+
+          if gh api "repos/${GITHUB_REPOSITORY}/git/ref/tags/${RELEASE_TAG}" >/dev/null 2>&1; then
+            gh api --method PATCH \
+              "repos/${GITHUB_REPOSITORY}/git/refs/tags/${RELEASE_TAG}" \
+              -f sha="$GITHUB_SHA" \
+              -F force=true >/dev/null
+          fi
+
+          if ! gh release view "$RELEASE_TAG" >/dev/null 2>&1; then
+            gh release create "$RELEASE_TAG" \
+              --target "$GITHUB_SHA" \
+              --prerelease \
+              --latest=false \
+              --title "INTERLIS Editor $RELEASE_VERSION snapshot" \
+              --notes "Automatically updated from main at $GITHUB_SHA."
+          fi
+
+          gh release upload "$RELEASE_TAG" release-assets/* --clobber
+          gh release edit "$RELEASE_TAG" \
+            --prerelease \
+            --title "INTERLIS Editor $RELEASE_VERSION snapshot" \
+            --notes "Automatically updated from main at $GITHUB_SHA."
