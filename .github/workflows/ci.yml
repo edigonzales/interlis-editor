@@ -40,7 +40,7 @@ jobs:
           yarn --version
 
       - name: Install dependencies
-        run: yarn install --non-interactive --network-timeout 600000
+        run: yarn install --frozen-lockfile --non-interactive --network-timeout 600000
 
       - name: Verify project structure
         run: yarn verify
