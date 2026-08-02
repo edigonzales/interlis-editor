@@ -103,7 +103,7 @@
     "app-builder-lib": "26.0.12",
     "electron": "42.3.0",
     "electron-builder": "26.0.12",
-    "rimraf": "2.7.1"
+    "rimraf": "6.1.3"
   },
   "scripts": {
     "clean": "theia clean && rimraf node_modules dist",
