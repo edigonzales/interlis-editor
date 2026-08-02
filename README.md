@@ -34,6 +34,10 @@ The separation is deliberate:
   downloaded from Open VSX during the build.
 - The VS Code 2026 themes remain a normal VS Code theme extension. Their source
   files are downloaded from a pinned VS Code release and placed in `plugins/`.
+- Only the INTERLIS tooling, the product themes, and the selected JSON, Git,
+  Markdown, XML, YAML, search, diff, conflict, and icon/theme support are
+  bundled. Other language support and development tooling can be installed from
+  Open VSX when needed.
 - Eclipse Theia itself is consumed only as versioned npm packages. No Theia
   source files are patched or copied into this repository.
 

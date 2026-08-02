@@ -66,7 +66,7 @@ assert(rootPackage.scripts['download:plugins'].includes('yarn themes'), 'Plugin 
 assert(rootPackage.scripts.build.includes('yarn themes'), 'Production build must prepare the local themes');
 assert(Object.keys(VSCODE_THEME_FILES).length === 8, 'Expected the two complete VS Code 2026 theme inheritance chains');
 assert(themeScript.includes('gitBlobSha1'), 'Theme downloader must verify Git blob SHA-1 values');
-assert(themePackage.publisher === 'interlis' && themePackage.name === 'interlis-editor-themes', 'Unexpected theme extension identity');
+assert(themePackage.publisher === 'edigonzales' && themePackage.name === 'interlis-editor-themes', 'Unexpected theme extension identity');
 const themeIds = themePackage.contributes?.themes?.map(theme => theme.id).sort();
 assert(JSON.stringify(themeIds) === JSON.stringify(['Dark 2026', 'Light 2026']), 'Theme extension must contribute Dark 2026 and Light 2026');
 

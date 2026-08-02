@@ -3,7 +3,7 @@
   "displayName": "INTERLIS Editor Themes",
   "description": "VS Code 2026 light and dark themes bundled with INTERLIS Editor.",
   "version": "0.1.0",
-  "publisher": "interlis",
+  "publisher": "edigonzales",
   "license": "MIT",
   "engines": {
     "vscode": "*"

@@ -2,6 +2,7 @@ import { createHash } from 'node:crypto';
 import { readdir, readFile, stat } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { allowedExtensionIds, allowedPluginDirectories } from './builtin-plugin-policy.mjs';
 import { VSCODE_THEME_FILES, VSCODE_THEME_VERSION } from './vscode-theme-sources.mjs';
 
 const root = resolve(fileURLToPath(new URL('..', import.meta.url)));
@@ -41,6 +42,36 @@ for (const packageJsonPath of await findPackageJson(pluginsDir)) {
     }
 }
 
+const expectedPluginIds = new Set(allowedExtensionIds);
+const actualPluginIds = new Set(
+    packages
+        .filter(({ pkg }) => pkg.publisher && pkg.name)
+        .map(({ pkg }) => `${pkg.publisher}.${pkg.name}`),
+);
+const missingPluginIds = [...expectedPluginIds].filter(id => !actualPluginIds.has(id));
+const unexpectedPluginIds = [...actualPluginIds].filter(id => !expectedPluginIds.has(id));
+if (missingPluginIds.length || unexpectedPluginIds.length) {
+    throw new Error([
+        missingPluginIds.length ? `Missing built-in plugins: ${missingPluginIds.join(', ')}` : '',
+        unexpectedPluginIds.length ? `Unexpected built-in plugins: ${unexpectedPluginIds.join(', ')}` : '',
+    ].filter(Boolean).join('. '));
+}
+
+const expectedPluginDirectories = new Set(allowedPluginDirectories);
+const actualPluginDirectories = new Set(
+    (await readdir(pluginsDir, { withFileTypes: true }))
+        .filter(entry => entry.isDirectory())
+        .map(entry => entry.name),
+);
+const missingPluginDirectories = [...expectedPluginDirectories].filter(directory => !actualPluginDirectories.has(directory));
+const unexpectedPluginDirectories = [...actualPluginDirectories].filter(directory => !expectedPluginDirectories.has(directory));
+if (missingPluginDirectories.length || unexpectedPluginDirectories.length) {
+    throw new Error([
+        missingPluginDirectories.length ? `Missing plugin directories: ${missingPluginDirectories.join(', ')}` : '',
+        unexpectedPluginDirectories.length ? `Unexpected plugin directories: ${unexpectedPluginDirectories.join(', ')}` : '',
+    ].filter(Boolean).join('. '));
+}
+
 const interlisExtension = packages.find(({ pkg }) => pkg.publisher === 'edigonzales' && pkg.name === 'interlis-editor');
 if (!interlisExtension) {
     throw new Error('Downloaded plugins do not contain edigonzales.interlis-editor');
@@ -52,9 +83,9 @@ if (!interlisExtension.pkg.main) {
     throw new Error('INTERLIS extension has no main entry point');
 }
 
-const themeExtension = packages.find(({ pkg }) => pkg.publisher === 'interlis' && pkg.name === 'interlis-editor-themes');
+const themeExtension = packages.find(({ pkg }) => pkg.publisher === 'edigonzales' && pkg.name === 'interlis-editor-themes');
 if (!themeExtension) {
-    throw new Error('Prepared plugins do not contain interlis.interlis-editor-themes');
+    throw new Error('Prepared plugins do not contain edigonzales.interlis-editor-themes');
 }
 const themes = themeExtension.pkg.contributes?.themes ?? [];
 for (const [id, uiTheme] of [['Dark 2026', 'vs-dark'], ['Light 2026', 'vs']]) {
