@@ -30,6 +30,38 @@
     font-display: swap;
 }
 
+@font-face {
+    font-family: 'MesloLGS NF';
+    src: url('./fonts/MesloLGS-NF-Regular.ttf') format('truetype');
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'MesloLGS NF';
+    src: url('./fonts/MesloLGS-NF-Italic.ttf') format('truetype');
+    font-style: italic;
+    font-weight: 400;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'MesloLGS NF';
+    src: url('./fonts/MesloLGS-NF-Bold.ttf') format('truetype');
+    font-style: normal;
+    font-weight: 700;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'MesloLGS NF';
+    src: url('./fonts/MesloLGS-NF-Bold-Italic.ttf') format('truetype');
+    font-style: italic;
+    font-weight: 700;
+    font-display: swap;
+}
+
 .interlis-editor-welcome {
     --interlis-accent: #315c8c;
     --interlis-muted: var(--theia-descriptionForeground);

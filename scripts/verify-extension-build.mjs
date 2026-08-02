@@ -16,8 +16,15 @@ const fontPaths = [
     'JetBrainsMono-BoldItalic.woff2',
     'OFL.txt',
 ].map(file => resolve(fontDirectory, file));
+const mesloFontPaths = [
+    'MesloLGS-NF-Regular.ttf',
+    'MesloLGS-NF-Italic.ttf',
+    'MesloLGS-NF-Bold.ttf',
+    'MesloLGS-NF-Bold-Italic.ttf',
+    'MesloLGS-NF-License.txt',
+].map(file => resolve(fontDirectory, file));
 
-for (const path of [modulePath, declarationPath, logoPath, stylePath, ...fontPaths]) {
+for (const path of [modulePath, declarationPath, logoPath, stylePath, ...fontPaths, ...mesloFontPaths]) {
     await access(path, constants.R_OK);
 }
 const compiled = await readFile(modulePath, 'utf8');
@@ -26,6 +33,11 @@ if (!compiled.includes('interlis-editor-about-dialog')) {
 }
 const style = await readFile(stylePath, 'utf8');
 for (const fontFile of fontPaths.slice(0, 4)) {
+    if (!style.includes(fontFile.split('/').pop())) {
+        throw new Error(`Product Extension CSS does not reference ${fontFile}`);
+    }
+}
+for (const fontFile of mesloFontPaths.slice(0, 4)) {
     if (!style.includes(fontFile.split('/').pop())) {
         throw new Error(`Product Extension CSS does not reference ${fontFile}`);
     }

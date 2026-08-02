@@ -1,5 +1,5 @@
 export const allowedPluginDirectories = Object.freeze([
-    'edigonzales.interlis-editor',
+    'edigonzales.interlis-language-tools',
     'interlis-editor-themes',
     'vscode.configuration-editing',
     'vscode.diff',
@@ -19,7 +19,7 @@ export const allowedPluginDirectories = Object.freeze([
 ]);
 
 export const allowedExtensionIds = Object.freeze([
-    'edigonzales.interlis-editor',
+    'edigonzales.interlis-language-tools',
     'edigonzales.interlis-editor-themes',
     'vscode.configuration-editing',
     'vscode.diff',

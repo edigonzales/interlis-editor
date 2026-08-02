@@ -8,6 +8,8 @@ applications/electron/resources/branding/*.png
 applications/electron/resources/branding/*.icns
 theia-extensions/interlis-editor-product/src/browser/style/ililogo1024.png
 theia-extensions/interlis-editor-product/src/browser/style/fonts/*.woff2
+theia-extensions/interlis-editor-product/src/browser/style/fonts/*.ttf
 theia-extensions/interlis-editor-product/src/browser/style/fonts/OFL.txt
+theia-extensions/interlis-editor-product/src/browser/style/fonts/MesloLGS-NF-License.txt
 .DS_Store
 *.log

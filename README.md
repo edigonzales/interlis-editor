@@ -1,8 +1,9 @@
 # INTERLIS Editor
 
 **INTERLIS Editor** is a dedicated desktop application for modelling INTERLIS
-models. It is composed as a small Eclipse Theia product and ships the existing
-[`edigonzales.interlis-editor`](https://open-vsx.org/extension/edigonzales/interlis-editor)
+models. It is composed as a small Eclipse Theia product and ships the current,
+Java-free
+[`edigonzales.interlis-language-tools`](https://open-vsx.org/extension/edigonzales/interlis-language-tools)
 VS Code extension as a built-in extension, so end users do not have to install it.
 
 This repository is a fresh implementation. It does not copy or fork the older
@@ -47,8 +48,9 @@ The separation is deliberate:
 - Yarn 1.22.22
 - A platform supported by Electron
 
-The published INTERLIS extension provides its own language-server runtime. A
-separate local Java installation is therefore not part of this product build.
+The bundled INTERLIS Language Tools extension provides its own language-service
+runtime. A separate local Java installation is therefore not part of this
+product build.
 
 ## Build and run
 
@@ -116,9 +118,15 @@ a source URL or hash requires an explicit edit in
 `scripts/fetch-branding-assets.mjs`.
 
 JetBrains Mono v2.304 is downloaded from its pinned official release, validated
-by checksum and bundled with the Product Extension. It is the default font for
-the editor and integrated terminal; its OFL-1.1 license is bundled alongside
-the font files.
+by checksum and bundled with the Product Extension. It remains the default
+editor font and its OFL-1.1 license is bundled alongside the font files.
+
+MesloLGS NF is downloaded from the pinned Powerlevel10k media commit, validated
+by checksum and bundled as the default font for the integrated terminal. The
+four TTF styles and the upstream Apache-2.0 license are included in the
+Product Extension. The font is available inside the desktop application on
+macOS, Windows and Linux; it is not installed as a system font for external
+terminal applications.
 
 ## Light and dark themes
 

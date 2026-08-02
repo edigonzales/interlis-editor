@@ -10,6 +10,8 @@ const execFileAsync = promisify(execFile);
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const archiveUrl = 'https://github.com/JetBrains/JetBrainsMono/releases/download/v2.304/JetBrainsMono-2.304.zip';
 const archiveSha256 = '6f6376c6ed2960ea8a963cd7387ec9d76e3f629125bc33d1fdcd7eb7012f7bbf';
+const mesloCommit = '145eb9fbc2f42ee408dacd9b22d8e6e0e553f83d';
+const mesloBaseUrl = `https://raw.githubusercontent.com/romkatv/powerlevel10k-media/${mesloCommit}`;
 const targetDirectory = resolve(root, 'theia-extensions/interlis-editor-product/src/browser/style/fonts');
 
 const assets = [
@@ -40,6 +42,34 @@ const assets = [
     },
 ];
 
+const mesloAssets = [
+    {
+        source: 'MesloLGS NF Regular.ttf',
+        target: 'MesloLGS-NF-Regular.ttf',
+        sha256: 'd97946186e97f8d7c0139e8983abf40a1d2d086924f2c5dbf1c29bd8f2c6e57d',
+    },
+    {
+        source: 'MesloLGS NF Italic.ttf',
+        target: 'MesloLGS-NF-Italic.ttf',
+        sha256: '6f357bcbe2597704e157a915625928bca38364a89c22a4ac36e7a116dcd392ef',
+    },
+    {
+        source: 'MesloLGS NF Bold.ttf',
+        target: 'MesloLGS-NF-Bold.ttf',
+        sha256: 'b6c0199cf7c7483c8343ea020658925e6de0aeb318b89908152fcb4d19226003',
+    },
+    {
+        source: 'MesloLGS NF Bold Italic.ttf',
+        target: 'MesloLGS-NF-Bold-Italic.ttf',
+        sha256: '56b4131adecec052c4b324efb818dd326d586dbc316fc68f98f1cae2eb8d1220',
+    },
+    {
+        source: 'MesloLGS NF License.txt',
+        target: 'MesloLGS-NF-License.txt',
+        sha256: '0eb25f1a4e86320ceae5f650cb75e628117c3f575bc2e332bb13cd08c3be438e',
+    },
+];
+
 function sha256(data) {
     return createHash('sha256').update(data).digest('hex');
 }
@@ -57,40 +87,60 @@ async function validExistingAsset(asset) {
 
 if ((await Promise.all(assets.map(validExistingAsset))).every(Boolean)) {
     console.log('Verified JetBrains Mono v2.304 assets.');
-    process.exit(0);
+} else {
+    const temporaryDirectory = await mkdtemp(join(tmpdir(), 'interlis-editor-fonts-'));
+    const archivePath = join(temporaryDirectory, 'JetBrainsMono-2.304.zip');
+
+    try {
+        const response = await fetch(archiveUrl, {
+            headers: { 'user-agent': 'interlis-editor-build' },
+            redirect: 'follow',
+        });
+        if (!response.ok) {
+            throw new Error(`Failed to download JetBrains Mono: ${response.status} ${response.statusText}`);
+        }
+
+        const archive = Buffer.from(await response.arrayBuffer());
+        if (sha256(archive) !== archiveSha256) {
+            throw new Error(`JetBrains Mono archive hash mismatch: expected ${archiveSha256}`);
+        }
+        await writeFile(archivePath, archive);
+        await mkdir(targetDirectory, { recursive: true });
+
+        for (const asset of assets) {
+            const { stdout } = await execFileAsync('unzip', ['-p', archivePath, asset.source], {
+                encoding: null,
+                maxBuffer: 1024 * 1024,
+            });
+            const data = Buffer.from(stdout);
+            if (sha256(data) !== asset.sha256) {
+                throw new Error(`JetBrains Mono asset hash mismatch for ${asset.source}: expected ${asset.sha256}`);
+            }
+            await writeFile(resolve(targetDirectory, asset.target), data);
+        }
+        console.log('Verified JetBrains Mono v2.304 assets.');
+    } finally {
+        await rm(temporaryDirectory, { recursive: true, force: true });
+    }
 }
 
-const temporaryDirectory = await mkdtemp(join(tmpdir(), 'interlis-editor-fonts-'));
-const archivePath = join(temporaryDirectory, 'JetBrainsMono-2.304.zip');
-
-try {
-    const response = await fetch(archiveUrl, {
-        headers: { 'user-agent': 'interlis-editor-build' },
-        redirect: 'follow',
-    });
-    if (!response.ok) {
-        throw new Error(`Failed to download JetBrains Mono: ${response.status} ${response.statusText}`);
-    }
-
-    const archive = Buffer.from(await response.arrayBuffer());
-    if (sha256(archive) !== archiveSha256) {
-        throw new Error(`JetBrains Mono archive hash mismatch: expected ${archiveSha256}`);
-    }
-    await writeFile(archivePath, archive);
+if ((await Promise.all(mesloAssets.map(validExistingAsset))).every(Boolean)) {
+    console.log(`Verified MesloLGS NF assets from ${mesloCommit}.`);
+} else {
     await mkdir(targetDirectory, { recursive: true });
-
-    for (const asset of assets) {
-        const { stdout } = await execFileAsync('unzip', ['-p', archivePath, asset.source], {
-            encoding: null,
-            maxBuffer: 1024 * 1024,
+    for (const asset of mesloAssets) {
+        const response = await fetch(`${mesloBaseUrl}/${encodeURIComponent(asset.source)}`, {
+            headers: { 'user-agent': 'interlis-editor-build' },
+            redirect: 'follow',
         });
-        const data = Buffer.from(stdout);
+        if (!response.ok) {
+            throw new Error(`Failed to download MesloLGS NF asset ${asset.source}: ${response.status} ${response.statusText}`);
+        }
+        const data = Buffer.from(await response.arrayBuffer());
         if (sha256(data) !== asset.sha256) {
-            throw new Error(`JetBrains Mono asset hash mismatch for ${asset.source}: expected ${asset.sha256}`);
+            throw new Error(`MesloLGS NF asset hash mismatch for ${asset.source}: expected ${asset.sha256}`);
         }
         await writeFile(resolve(targetDirectory, asset.target), data);
     }
-    console.log('Verified JetBrains Mono v2.304 assets.');
-} finally {
-    await rm(temporaryDirectory, { recursive: true, force: true });
+    console.log(`Verified MesloLGS NF assets from ${mesloCommit}.`);
 }

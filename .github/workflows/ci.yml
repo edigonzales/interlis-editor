@@ -51,7 +51,7 @@ jobs:
       - name: Download built-in extensions and prepare themes
         run: yarn download:plugins
 
-      - name: Verify INTERLIS extension and themes
+      - name: Verify INTERLIS Language Tools extension and themes
         run: yarn verify:plugins
 
       - name: Build production application
