@@ -24,9 +24,13 @@ assert(appPackage.theia.frontend.config.applicationName === 'INTERLIS Editor', '
 assert(appPackage.theia.frontend.config.electron.appUserModelId === 'ch.interlis.editor', 'Unexpected appUserModelId');
 assert(appPackage.theia.frontend.config.electron.splashScreenOptions.content === 'resources/interlis-splash.html', 'Unexpected splash screen entry');
 assert(appPackage.theia.frontend.config.preferences['workbench.colorTheme'] === 'Dark 2026', 'Dark 2026 must be the default theme');
+assert(appPackage.theia.frontend.config.preferences['editor.fontFamily'] === 'JetBrains Mono, monospace', 'JetBrains Mono must be the default editor font');
+assert(appPackage.theia.frontend.config.preferences['terminal.integrated.fontFamily'] === 'JetBrains Mono, monospace', 'JetBrains Mono must be the default terminal font');
 assert(builder.includes('productName: INTERLIS Editor'), 'electron-builder product name is missing');
 assert(builder.includes('executableName: interlis-editor'), 'Stable executable name is missing');
-assert(builder.includes('resources/branding/ililogo1024.png'), 'Application logo is not configured');
+assert(builder.includes('resources/branding/interlis-app-icon.icns'), 'macOS application icon is not configured');
+assert(builder.includes('resources/branding/interlis-app-icon.png'), 'Cross-platform application icon is not configured');
+assert(builder.includes('resources/branding/ililogo1024.png') === false, 'Product logo must not be used as the packaged application icon');
 
 const expectedTheia = rootPackage.interlisEditor.theiaVersion;
 const packageEntries = [
@@ -51,6 +55,10 @@ assert(productPackage.theiaExtensions?.[0]?.frontend === 'lib/browser/interlis-e
 assert(assetScript.includes(rootPackage.interlisEditor.theiaTemplateCommit) === false, 'Branding script must not depend on the Theia template commit');
 assert(assetScript.includes('0079e36663dbb2cc126cd10b568c07075bef666a'), 'Splash image hash is not pinned');
 assert(assetScript.includes('c130c2e5af2949a306d2c10ac53004a75fc11857'), 'Logo hash is not pinned');
+assert(assetScript.includes('fe0efefa58236d01b664f2083c0ebfeb14ecae6d'), 'macOS application icon hash is not pinned');
+assert(assetScript.includes('77f6a730c7c6eccaf33f5ebb39fcdfa5932bda87'), 'Cross-platform application icon hash is not pinned');
+assert(rootPackage.scripts.fonts === 'node scripts/fetch-font-assets.mjs', 'Font preparation script is not registered');
+assert(rootPackage.scripts.build.includes('yarn fonts'), 'Production build must prepare JetBrains Mono');
 
 assert(rootPackage.interlisEditor.vscodeThemeVersion === VSCODE_THEME_VERSION, 'VS Code theme version mismatch');
 assert(rootPackage.scripts.themes === 'node scripts/prepare-vscode-themes.mjs', 'Theme preparation script is not registered');
@@ -64,6 +72,7 @@ assert(JSON.stringify(themeIds) === JSON.stringify(['Dark 2026', 'Light 2026']),
 
 for (const required of [
     'applications/electron/resources/interlis-splash.html',
+    'scripts/fetch-font-assets.mjs',
     'theia-extensions/interlis-editor-product/src/browser/interlis-editor-about-dialog.tsx',
     'theia-extensions/interlis-editor-product/src/browser/interlis-editor-getting-started-widget.tsx',
     'vscode-extensions/interlis-editor-themes/package.json',

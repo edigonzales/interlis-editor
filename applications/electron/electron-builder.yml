@@ -34,12 +34,12 @@ publish:
   releaseType: release
 
 win:
-  icon: resources/branding/ililogo1024.png
+  icon: resources/branding/interlis-app-icon.png
   target:
     - nsis
 
 mac:
-  icon: resources/branding/ililogo1024.png
+  icon: resources/branding/interlis-app-icon.icns
   category: public.app-category.developer-tools
   darkModeSupport: true
   target:
@@ -47,7 +47,7 @@ mac:
     - zip
 
 linux:
-  icon: resources/branding/ililogo1024.png
+  icon: resources/branding/interlis-app-icon.png
   category: Development
   vendor: INTERLIS Editor contributors
   target:

@@ -5,6 +5,9 @@ plugins/
 **/dist/
 **/*.tsbuildinfo
 applications/electron/resources/branding/*.png
+applications/electron/resources/branding/*.icns
 theia-extensions/interlis-editor-product/src/browser/style/ililogo1024.png
+theia-extensions/interlis-editor-product/src/browser/style/fonts/*.woff2
+theia-extensions/interlis-editor-product/src/browser/style/fonts/OFL.txt
 .DS_Store
 *.log

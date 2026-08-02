@@ -53,10 +53,40 @@ corepack enable
 corepack prepare yarn@1.22.22 --activate
 yarn install
 yarn verify
+yarn fonts
 yarn download:plugins
 yarn verify:plugins
 yarn build
 yarn start
+```
+
+Der komplette Installations-, Verifikations-, Build- und Packaging-Ablauf kann
+alternativ mit einem einzigen Script gestartet werden:
+
+```bash
+./scripts/build.sh
+```
+
+Das Script erzeugt unter Linux das bestehende Preview-Paket aus
+`yarn package:preview`; auf macOS und Windows wird das native Plattformpaket
+gebaut. Über `yarn build:all` ist derselbe Ablauf ebenfalls verfügbar.
+
+Für einen schnellen lokalen Build und Start ohne DMG, ZIP oder Installer:
+
+```bash
+./scripts/start-editor.sh
+```
+
+Alternativ:
+
+```bash
+yarn start:dev
+```
+
+Eine Datei oder ein Workspace kann direkt mitgegeben werden. Dateien werden als Editor-Datei geöffnet, Verzeichnisse als Workspace:
+
+```bash
+./scripts/start-editor.sh examples/MinimalModel.ili
 ```
 
 Create an unpacked desktop application for the current platform:
@@ -73,11 +103,18 @@ a pinned commit of `edigonzales/interlis-ide` and validates their Git blob SHA-1
 before using them:
 
 - `oldinterlis.png` — Electron splash screen
-- `ililogo1024.png` — application icon, welcome-page logo and About-dialog logo
+- `ililogo1024.png` — welcome-page and About-dialog logo
+- `interlis-app-icon.icns` — macOS/Dock application icon from the pinned INTERLIS icon commit
+- `interlis-app-icon.png` — Windows/Linux application icon from the same commit
 
 The downloaded files are generated build inputs and are ignored by Git. Changing
 a source URL or hash requires an explicit edit in
 `scripts/fetch-branding-assets.mjs`.
+
+JetBrains Mono v2.304 is downloaded from its pinned official release, validated
+by checksum and bundled with the Product Extension. It is the default font for
+the editor and integrated terminal; its OFL-1.1 license is bundled alongside
+the font files.
 
 ## Light and dark themes
 

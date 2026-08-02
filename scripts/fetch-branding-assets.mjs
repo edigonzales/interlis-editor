@@ -24,6 +24,22 @@ const assets = [
             'theia-extensions/interlis-editor-product/src/browser/style/ililogo1024.png',
         ],
     },
+    {
+        name: 'interlis-app-icon.icns',
+        url: `https://raw.githubusercontent.com/edigonzales/interlis-ide/bbecd90c7380ad42bd7bcc6ea93d7973148127eb/applications/electron/resources/icons/MacLauncherIcons/icon.icns`,
+        gitBlobSha1: 'fe0efefa58236d01b664f2083c0ebfeb14ecae6d',
+        targets: [
+            'applications/electron/resources/branding/interlis-app-icon.icns',
+        ],
+    },
+    {
+        name: 'interlis-app-icon.png',
+        url: `https://raw.githubusercontent.com/edigonzales/interlis-ide/bbecd90c7380ad42bd7bcc6ea93d7973148127eb/applications/electron/resources/icons/MacLauncherIcons/icon.icon/Assets/icon.png`,
+        gitBlobSha1: '77f6a730c7c6eccaf33f5ebb39fcdfa5932bda87',
+        targets: [
+            'applications/electron/resources/branding/interlis-app-icon.png',
+        ],
+    },
 ];
 
 function gitBlobSha1(data) {
