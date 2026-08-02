@@ -89,6 +89,18 @@ Alternativ:
 yarn start:dev
 ```
 
+### macOS-Sicherheitshinweis
+
+Die macOS-Pakete werden ohne Apple-Zertifikat ad-hoc signiert. Beim ersten
+Start kann macOS deshalb weiterhin eine Gatekeeper-Warnung anzeigen. Falls
+die App nicht direkt geöffnet wird, die App einmal starten und anschließend in
+`Systemeinstellungen > Datenschutz & Sicherheit` mit `Dennoch öffnen` bzw.
+`Open Anyway` freigeben.
+
+Die Ad-hoc-Signatur schafft keine Apple-Vertrauensstellung und ersetzt weder
+ein Developer-ID-Zertifikat noch die Notarisierung. Für eine vollständig
+vertrauenswürdige Verteilung wären diese weiterhin erforderlich.
+
 Eine Datei oder ein Workspace kann direkt mitgegeben werden. Dateien werden als Editor-Datei geöffnet, Verzeichnisse als Workspace:
 
 ```bash

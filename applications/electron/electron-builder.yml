@@ -43,6 +43,9 @@ mac:
   icon: resources/branding/interlis-app-icon.icns
   category: public.app-category.developer-tools
   darkModeSupport: true
+  identity: "-"
+  sign: ./scripts/sign-macos-adhoc.mjs
+  hardenedRuntime: true
   target:
     - dmg
     - zip

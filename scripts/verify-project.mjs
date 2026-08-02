@@ -10,6 +10,7 @@ const appPackage = await readJson('applications/electron/package.json');
 const productPackage = await readJson('theia-extensions/interlis-editor-product/package.json');
 const themePackage = await readJson('vscode-extensions/interlis-editor-themes/package.json');
 const builder = await readFile(resolve(root, 'applications/electron/electron-builder.yml'), 'utf8');
+const macAdHocSigner = await readFile(resolve(root, 'applications/electron/scripts/sign-macos-adhoc.mjs'), 'utf8');
 const assetScript = await readFile(resolve(root, 'scripts/fetch-branding-assets.mjs'), 'utf8');
 const themeScript = await readFile(resolve(root, 'scripts/prepare-vscode-themes.mjs'), 'utf8');
 const expectedExtensionId = 'edigonzales.' + 'interlis-language-tools';
@@ -34,8 +35,13 @@ assert(builder.includes('productName: INTERLIS Editor'), 'electron-builder produ
 assert(builder.includes('executableName: interlis-editor'), 'Stable executable name is missing');
 assert(builder.includes('vPrefixedTagName: true'), 'GitHub release tags must use the v prefix');
 assert(builder.includes('resources/branding/interlis-app-icon.icns'), 'macOS application icon is not configured');
+assert(builder.includes('identity: "-"'), 'macOS ad-hoc signing identity is not configured');
+assert(builder.includes('sign: ./scripts/sign-macos-adhoc.mjs'), 'macOS ad-hoc signing hook is not configured');
 assert(builder.includes('resources/branding/interlis-app-icon.png'), 'Cross-platform application icon is not configured');
 assert(builder.includes('resources/branding/ililogo1024.png') === false, 'Product logo must not be used as the packaged application icon');
+assert(appPackage.devDependencies['@electron/osx-sign'] === '1.3.1', 'The macOS signing dependency must be pinned');
+assert(macAdHocSigner.includes("identity: '-'"), 'macOS signer must use an ad-hoc identity');
+assert(macAdHocSigner.includes('identityValidation: false'), 'macOS signer must skip certificate identity validation');
 
 const expectedTheia = rootPackage.interlisEditor.theiaVersion;
 const packageEntries = [
@@ -84,6 +90,7 @@ assert(JSON.stringify(themeIds) === JSON.stringify(['Dark 2026', 'Light 2026']),
 
 for (const required of [
     'applications/electron/resources/interlis-splash.html',
+    'applications/electron/scripts/sign-macos-adhoc.mjs',
     'scripts/fetch-font-assets.mjs',
     'theia-extensions/interlis-editor-product/src/browser/interlis-editor-about-dialog.tsx',
     'theia-extensions/interlis-editor-product/src/browser/interlis-editor-getting-started-widget.tsx',
