@@ -1,6 +1,6 @@
 import { access, readFile } from 'node:fs/promises';
 import { constants } from 'node:fs';
-import { resolve } from 'node:path';
+import { basename, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const root = resolve(fileURLToPath(new URL('..', import.meta.url)));
@@ -33,12 +33,12 @@ if (!compiled.includes('interlis-editor-about-dialog')) {
 }
 const style = await readFile(stylePath, 'utf8');
 for (const fontFile of fontPaths.slice(0, 4)) {
-    if (!style.includes(fontFile.split('/').pop())) {
+    if (!style.includes(basename(fontFile))) {
         throw new Error(`Product Extension CSS does not reference ${fontFile}`);
     }
 }
 for (const fontFile of mesloFontPaths.slice(0, 4)) {
-    if (!style.includes(fontFile.split('/').pop())) {
+    if (!style.includes(basename(fontFile))) {
         throw new Error(`Product Extension CSS does not reference ${fontFile}`);
     }
 }
